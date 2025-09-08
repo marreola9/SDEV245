@@ -1,12 +1,13 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { basicAuth } from 'hono/basic-auth'
+import { logger } from 'hono/logger'
 const app = new Hono()
 
 app.get('/', (c) => {
   return c.text('Hello Hono!')
 })
-
+app.use('*', logger())
 app.use('/admin/*', basicAuth({username: 'carmen', password: '1234'}))
 app.use('/users/*', basicAuth({username: 'carmen', password: '4321'}))
 
@@ -27,4 +28,4 @@ serve({
 })
 
 // The part of the CIA tirad that focuses on is availability 
-// using a password to authorize the correct user
+// using a password to authentication the correct user
