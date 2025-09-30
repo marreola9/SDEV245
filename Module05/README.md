@@ -1,3 +1,35 @@
+From the code snippets in module 5, I briefly explain why they didn't work. I also created an application with the included fixes, following OWASP guidelines.
+
+1. Broken Access Control (IDOR) — Node/Express
+   Returns any user profile by :userId without checking that the requester is the resource owner or has a role allowing access. Anyone who can guess/iterate IDs can read others’ data.
+
+2. Broken Access Control (IDOR) — Flask
+   Same flaw: fetches /account/<user_id> directly from the path and returns it with no authorization check. Exposes accounts to unauthorized users.
+
+3. Cryptographic Failures — Java/MD5
+   Uses MD5 (fast, broken, no salt). Fast hashes are trivial to brute-force and rainbow-table; there’s no password-hardening (e.g., PBKDF2/Bcrypt/Argon2) or per-user salt.
+
+4. Cryptographic Failures — Python/SHA-1
+   Uses SHA-1 with no salt or key-stretching. SHA-1 is obsolete for passwords and, being fast, is susceptible to guessing attacks.
+
+5. Injection — SQL (string concatenation)
+   Builds the SQL with untrusted username; an attacker can inject SQL (' OR '1'='1 etc.), leading to data exfiltration or account bypass. No parameterization/prepared statement.
+
+6. Injection — NoSQL/Mongo
+   Directly trusts req.query.username in the filter. Attackers can pass crafted objects/operators (e.g., {"$ne": null}) or special types, causing NoSQL injection and unintended matches.
+
+7. Insecure Design — Password reset
+   Resets a password solely by providing email + new_password. No proof of mailbox control, no one-time, time-limited token, no verification or logging — a trivial account takeover path.
+
+8. Software & Data Integrity Failures — Untrusted script source
+   Loads executable code from a CDN with no integrity guarantees (no subresource integrity, pinning, or signature). If the CDN or path is compromised, you execute attacker code.
+
+9. Server-Side Request Forgery (SSRF)
+   Fetches an arbitrary user-supplied URL. Attackers can make your server reach internal services (e.g., cloud metadata, localhost/admin endpoints) or pivot within your network.
+
+10. Identification & Authentication Failures — Plaintext comparison
+    Compares input to user.getPassword() directly, implying passwords are stored/retrieved in plaintext (or as reversible/fast hashes). No secure hashing, no constant-time verification, no rate limiting/MFA — easy credential-stuffing and full compromise on data leak.
+
 Socket Login Demo
 
 A minimal username/password login service over TCP sockets using Python’s standard library (no frameworks).
@@ -15,13 +47,13 @@ userdata.db — SQLite database (created by init_db.py).
 
 Features
 
-🔐 PBKDF2-HMAC-SHA256 with per-user random salt (constant-time compare).
+PBKDF2-HMAC-SHA256 with per-user random salt (constant-time compare).
 
-🚫 Basic in-memory rate limiting: 5 attempts per IP per 60s.
+Basic in-memory rate limiting: 5 attempts per IP per 60s.
 
-🙈 Generic error messages to reduce user enumeration.
+Generic error messages to reduce user enumeration.
 
-🧪 Tiny, dependency-free demo (Python stdlib only).
+Tiny, dependency-free demo (Python stdlib only).
 
 Requirements
 
